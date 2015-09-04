@@ -23,11 +23,13 @@ namespace PowerShellTools.Explorer
     /// implementation of the IVsUIElementPane interface.
     /// </summary>
     [Guid("dd9b7693-1385-46a9-a054-06566904f861")]
-    public class PSCommandExplorerWindow : ToolWindowPane, IHostWindow
+    public class PSCommandExplorerWindow : ToolWindowPane, IHostWindow, IViewHost
     {
         private readonly IExceptionHandler _exceptionHandler;
         private readonly IDataProvider _dataProvider;
         private readonly PSCommandExplorer _commandExplorer;
+
+        private readonly IViewController _viewController;
 
         /// <summary>
         /// Standard constructor for the tool window.
@@ -38,6 +40,9 @@ namespace PowerShellTools.Explorer
             _exceptionHandler = new ExceptionHandler();
             _dataProvider = new DataProvider(_exceptionHandler);
             _commandExplorer = new PSCommandExplorer(this, _dataProvider, _exceptionHandler);
+
+            var viewFactory = ViewFactory.GetInstance(this, _dataProvider, _exceptionHandler);
+            _viewController = new ViewController(this, viewFactory);
 
             // Set the window title reading it from the resources.
             this.Caption = Resources.ToolWindowTitle;
@@ -56,6 +61,14 @@ namespace PowerShellTools.Explorer
             ShowCommandExplorer();
         }
 
+        public IViewController ViewController
+        {
+            get
+            {
+                return _viewController;
+            }
+        }
+
         public HostControl ContentHost
         {
             get
@@ -67,6 +80,25 @@ namespace PowerShellTools.Explorer
                 ((HostControl)base.Content).Content = value;
             }
         }
+
+        public void SetCaptionInfo(string info)
+        {
+            var caption = Resources.ToolWindowTitle;
+            if (string.IsNullOrWhiteSpace(info))
+            {
+                Caption = caption;
+            }
+            else
+            {
+                Caption = string.Format("{0} - {1}", caption, info);
+            }
+        }
+
+        public void ClearCaptionInfo()
+        {
+            Caption = Resources.ToolWindowTitle;
+        }
+
 
         public void ShowCommandExplorer()
         {
