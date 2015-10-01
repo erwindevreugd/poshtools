@@ -180,13 +180,20 @@ namespace PowerShellTools.Explorer
 
         private void UpdateCommandPreview()
         {
-            CommandFormatterOptions options = new CommandFormatterOptions()
+            try
             {
-                FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
-                ParameterSet = _selectedItem
-            };
+                CommandFormatterOptions options = new CommandFormatterOptions()
+                {
+                    FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
+                    ParameterSet = _selectedItem
+                };
 
-            CommandPreview = CommandFormatter.FormatCommandModel(Model, options);
+                CommandPreview = CommandFormatter.FormatCommandModel(Model, options);
+            }
+            catch (Exception ex)
+            {
+                _exceptionHandler.HandleException(ex);
+            }
         }
 
         private void ViewDetails()
@@ -197,16 +204,23 @@ namespace PowerShellTools.Explorer
 
         private void Copy()
         {
-            // TODO: Get the value to copy directly from the command preview box
-            CommandFormatterOptions options = new CommandFormatterOptions()
+            try
             {
-                FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
-                ParameterSet = _selectedItem
-            };
+                // TODO: Get the value to copy directly from the command preview box
+                CommandFormatterOptions options = new CommandFormatterOptions()
+                {
+                    FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
+                    ParameterSet = _selectedItem
+                };
 
-            var command = CommandFormatter.FormatCommandModel(Model, options);
+                var command = CommandFormatter.FormatCommandModel(Model, options);
 
-            ClipboardHelper.SetText(command);
+                ClipboardHelper.SetText(command);
+            }
+            catch (Exception ex)
+            {
+                _exceptionHandler.HandleException(ex);
+            }
         }
 
         private void Cancel()
